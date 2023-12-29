@@ -1,0 +1,64 @@
+---
+- name: Install dev tools
+  hosts: localhost
+
+  tasks:
+  - name: "Install apt-packages"
+    ansible.builtin.apt:
+      pkg:    
+      - git
+      - docker
+      - docker-compose
+      - python3-pip
+      - wget
+      - libc6
+      - libgcc1
+      - libgcc-s1
+      - libgssapi-krb5-2
+      - libicu70
+      - liblttng-ust1
+      - libssl3
+      - libstdc++6
+      - libunwind8 
+      - zlib1g
+
+  - name: "Starting Docker"
+    become: true
+    service:
+      name: docker
+      state: started
+      enabled: yes
+
+  - name: "Create Project Directory"
+    ansible.builtin.file:
+      path: ~/Project
+      state: directory
+      mode: '0755'
+
+  - name: "Download .NET SDK archive"
+    ansible.builtin.get_url:
+      url: https://download.visualstudio.microsoft.com/download/pr/257bdcc7-cbfd-4680-964a-cbe8e9160bca/ac0cbf19d897ba51ae004b4146940a0a/aspnetcore-runtime-8.0.0-linux-x64.tar.gz
+      dest: ~/Downloads
+
+  - name: "Create .dotnet Directory"
+    ansible.builtin.file:
+      path: ~/.dotnet
+      state: directory
+      mode: '0755'
+
+  - name: "Unarchive .NET SDK"
+    ansible.builtin.unarchive:
+      src: /home/matt/Downloads/aspnetcore-runtime-8.0.0-linux-x64.tar.gz
+      dest: ~/.dotnet
+      remote_src: yes
+
+  # - name: "Clone DomProject Git repository"
+  #   ansible.builtin.git:
+  #     repo: https://github.com/CharlieMarines/DomProject.git
+  #     dest: ~/Project
+  #     clone: yes
+  #     update: yes
+
+    environment:
+      DOTNET_ROOT=/home/matt/.dotnet
+      PATH=$PATH:$DOTNET_ROOT:$DOTNET_ROOT/tools
